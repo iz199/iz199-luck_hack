@@ -160,7 +160,6 @@ local flyBV = nil
 local flyBG = nil
 local flyConn = nil
 local function toggleFly()
-    flyActive = not flyActive
     if flyActive then
         local char = player.Character
         if not char then return end
@@ -249,7 +248,7 @@ player.CharacterAdded:Connect(function()
     end
 end)
 runService.RenderStepped:Connect(mainLoop)
- local accentColor = Color3.fromRGB(0, 150, 255)
+local accentColor = Color3.fromRGB(0, 150, 255)
 local UI_SCALE = 0.8
 local isMinimized = false
 local ScreenGui = Instance.new("ScreenGui")
@@ -519,6 +518,10 @@ createToggle("ESP", false, function(state) espActive = state end)
 createToggle("Aimbot", false, function(state) aimbotActive = state end)
 createToggle("Auto Shoot", false, function(state) autoShoot = state end)
 createToggle("Speed", false, function(state) speedActive = state end)
+createToggle("Fly", false, function(state)
+    flyActive = state
+    toggleFly()
+end)
 local spPage = Instance.new("Frame")
 spPage.Parent = ContentArea
 spPage.BackgroundTransparency = 1
@@ -689,3 +692,4 @@ createTabButton("Credits", "Credits")
 tabButtons[1].BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 tabButtons[1].TextColor3 = Color3.fromRGB(255, 255, 255)
 print("iz911_hub Loaded")
+💋
